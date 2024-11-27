@@ -128,6 +128,42 @@ A **trigger** is a stored program that is executed automatically in response to 
    +------------+-----------+------------+------------+--------------+----------------+
    ```
 
+   
+ 4. **DELETE Trigger**
+   - A **DELETE trigger** is executed automatically when a row is deleted from a table. It can be used to log deleted records or maintain referential integrity.
+   - Log the deleted record into an audit table before the deletion.
+
+```sql
+-- Table Definitions
+CREATE TABLE contacts (
+    contact_id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(25),
+    last_name VARCHAR(30)
+);
+
+CREATE TABLE contacts_audit (
+    contact_id INT,
+    deleted_date DATE,
+    deleted_by VARCHAR(30)
+);
+
+-- Trigger Definition
+DELIMITER //
+CREATE TRIGGER before_delete_contact
+BEFORE DELETE ON contacts
+FOR EACH ROW
+BEGIN
+    INSERT INTO contacts_audit (contact_id, deleted_date, deleted_by)
+    VALUES (OLD.contact_id, SYSDATE(), USER());
+END //
+DELIMITER ;
+
+-- Test Case
+INSERT INTO contacts (first_name, last_name) VALUES ('John', 'Doe');
+DELETE FROM contacts WHERE last_name = 'Doe';
+SELECT * FROM contacts_audit;
+```
+
 ---
 
 ## **Views**
